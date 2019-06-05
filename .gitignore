@@ -9,8 +9,5 @@
 out
 gen
 .idea/inspectionProfiles/
-.idea/misc.xml
-.idea/modules.xml
+.idea/*.xml
 .idea/transeiverstatusssh.iml
-.idea/workspace.xml
-transeiverstatusssh.exe
