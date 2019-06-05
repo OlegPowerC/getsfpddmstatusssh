@@ -1,0 +1,16 @@
+# Created by .ignore support plugin (hsz.mobi)
+### Example user template template
+### Example user template
+
+# IntelliJ project files
+.idea
+*.iml
+*.exe
+out
+gen
+.idea/inspectionProfiles/
+.idea/misc.xml
+.idea/modules.xml
+.idea/transeiverstatusssh.iml
+.idea/workspace.xml
+transeiverstatusssh.exe
