@@ -22,9 +22,11 @@ type result struct {
 
 type prtgbody struct {
 	XMLName xml.Name `xml:"prtg"`
+	Error int `xml:"error"`
 	TextField string `xml:"text"`
 	Res []result `xml:"result"`
 }
+
 
 type Mcmd struct {
 	Shtranseivercmdpre string
@@ -45,6 +47,7 @@ var (
 	port = flag.Int("p", 22, "Port")
 	passwd = flag.String("pw", "", "Password")
 	interfaces = flag.String("i", "", "Interfaces separate by comma")
+	debuggmode = flag.Int("d", 0, "Debugg mode: 0 disable, 1 enable")
 )
 
 func RetXMLfromMap(IMap map[string]Transeiverdata,buff bytes.Buffer,intnames []string)[]byte{
@@ -79,6 +82,14 @@ func RetXMLfromMap(IMap map[string]Transeiverdata,buff bytes.Buffer,intnames []s
 	bolB, _ := xml.Marshal(mt1)
 	return bolB
 }
+func ErrorInProgram (err error){
+	var estring string
+	estring = fmt.Sprintf("%s",err)
+	mt1 := &prtgbody{TextField:estring,Error:1}
+	bolB, _ := xml.Marshal(mt1)
+	fmt.Println(string(bolB))
+	os.Exit(1)
+}
 
 func main() {
 	var TData map[string]Transeiverdata
@@ -101,7 +112,7 @@ func main() {
 	addr := fmt.Sprintf("%s:%d", *host, *port)
 	client, err := ssh.Dial("tcp", addr, config)
 	if err != nil {
-		panic(err)
+		ErrorInProgram(err)
 	}
 
 	var interfacessplits []string
@@ -117,14 +128,15 @@ func main() {
 	// Create sesssion
 	sess, err := client.NewSession()
 	if err != nil {
-		fmt.Println("Error")
+		//fmt.Println("Error")
+		ErrorInProgram(err)
 	}
 	defer sess.Close()
 
 	// StdinPipe for commands
 	stdin, err := sess.StdinPipe()
 	if err != nil {
-		fmt.Println("Error")
+		ErrorInProgram(err)
 	}
 
 	var somibuff bytes.Buffer
@@ -134,13 +146,13 @@ func main() {
 	// Start remote shell
 	err = sess.Shell()
 	if err != nil {
-		fmt.Println("Error")
+		ErrorInProgram(err)
 	}
 
 	for _, cmd := range Cmds {
 		_, err = fmt.Fprintf(stdin, "%s\n", cmd)
 		if err != nil {
-			fmt.Println("Error")
+			ErrorInProgram(err)
 		}
 	}
 
@@ -149,7 +161,7 @@ func main() {
 	// Wait for sess to finish
 	err = sess.Wait()
 	if err != nil {
-		fmt.Println("Error")
+		ErrorInProgram(err)
 	}
 
 	bolB := RetXMLfromMap(TData,somibuff,interfacessplits)
